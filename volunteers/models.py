@@ -162,6 +162,7 @@ class Talk(models.Model, HasLinkField):
     track = models.ForeignKey(Track)
     title = models.CharField(max_length=256)
     speaker = models.CharField(max_length=128)
+    room = models.CharField(max_length=128, default="somewhere")
     description = models.TextField()
     date = models.DateField()
     start_time = models.TimeField()
@@ -292,6 +293,7 @@ class Task(models.Model, HasLinkField):
     # For auto-importing; otherwise we can't have multiple cloak room and
     # infodesk tasks if we do a simple name search in create_from_xml
     counter = models.CharField(max_length=2)
+    room = models.CharField(max_length=128, default="somewhere")
     description = models.TextField()
     date = models.DateField()
     start_time = models.TimeField()
@@ -333,6 +335,7 @@ class Task(models.Model, HasLinkField):
         else:
             task = cls(talk=talk, template=template)
         task.template = template
+        task.room = talk.room
         task.name = '%s: %s' % (task_type, talk.title)
         task.date = talk.date
         task.start_time = talk.start_time
@@ -358,6 +361,7 @@ class Task(models.Model, HasLinkField):
         else:
             task = cls(name=name, counter=counter, template=template, edition=edition)
         task.description = xml.find('description').text
+        task.room = xml.find('room').text
         day_offset = int(xml.find('day').text)
         task.date = edition.start_date + datetime.timedelta(days=day_offset)
         task.start_time = parse_time(xml.find('start_time').text)

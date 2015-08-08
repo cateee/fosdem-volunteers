@@ -215,13 +215,13 @@ class TaskTemplateAdmin(admin.ModelAdmin):
 
 class TaskAdmin(admin.ModelAdmin):
     fieldsets = [
-        (None, {'fields': ['edition', 'name', 'nbr_volunteers', 'nbr_volunteers_min', 'nbr_volunteers_max', 'date', 'start_time', 'end_time']}),
+        (None, {'fields': ['edition', 'name', 'room', 'nbr_volunteers', 'nbr_volunteers_min', 'nbr_volunteers_max', 'date', 'start_time', 'end_time']}),
         (None, {'fields': ['talk', 'template']}),
         (None, {'fields': ['description']}),
     ]
     inlines = (VolunteerTaskInline, )
-    list_display = ['link', 'edition', 'name', 'date', 'start_time', 'end_time', 'assigned_volunteers', 'nbr_volunteers', 'nbr_volunteers_min', 'nbr_volunteers_max']
-    list_editable = ['name', 'date', 'start_time', 'end_time', 'nbr_volunteers', 'nbr_volunteers_min', 'nbr_volunteers_max']
+    list_display = ['link', 'edition', 'name', 'room', 'date', 'start_time', 'end_time', 'assigned_volunteers', 'nbr_volunteers', 'nbr_volunteers_min', 'nbr_volunteers_max']
+    list_editable = ['name', 'room', 'date', 'start_time', 'end_time', 'nbr_volunteers', 'nbr_volunteers_min', 'nbr_volunteers_max']
     list_filter = [EditionFilter, DayListFilter, 'template', 'talk__track']
 
 
