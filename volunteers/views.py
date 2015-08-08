@@ -14,14 +14,16 @@ from django.utils.translation import ugettext as _
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 
-from userena.utils import get_user_model
-from userena.forms import SignupFormOnlyEmail
-from userena.decorators import secure_required
-from userena import signals as userena_signals
-from userena import settings as userena_settings
-from userena.views import ExtraContextTemplateView, get_profile_model
+from summit.schedule.models import Summit
 
-from guardian.decorators import permission_required_or_403
+#from userena.utils import get_user_model
+#from userena.forms import SignupFormOnlyEmail
+#from userena.decorators import secure_required
+#from userena import signals as userena_signals
+#from userena import settings as userena_settings
+#from userena.views import ExtraContextTemplateView, get_profile_model
+
+#from guardian.decorators import permission_required_or_403
 
 import csv
 import cStringIO as StringIO
@@ -108,9 +110,9 @@ def talk_list(request, edition, volunteer):
             # delete him/her
             VolunteerTalk.objects.filter(talk=talk, volunteer=volunteer).delete()
 
-        # show success message when enabled
-        if userena_settings.USERENA_USE_MESSAGES:
-            messages.success(request, _('Your talks have been updated.'), fail_silently=True)
+#        # show success message when enabled
+#        if userena_settings.USERENA_USE_MESSAGES:
+#            messages.success(request, _('Your talks have been updated.'), fail_silently=True)
 
         # redirect to prevent repost
         return redirect('talk_list', edition_name=edition.name)
@@ -216,9 +218,9 @@ def task_list(request, edition):
         for task in current_tasks.filter(id__in=task_ids):
             VolunteerTask.objects.get_or_create(task=task, volunteer=volunteer)
 
-        # show success message when enabled
-        if userena_settings.USERENA_USE_MESSAGES:
-            messages.success(request, _('Your tasks have been updated.'), fail_silently=True)
+#        # show success message when enabled
+#        if userena_settings.USERENA_USE_MESSAGES:
+#            messages.success(request, _('Your tasks have been updated.'), fail_silently=True)
 
         # redirect to prevent repost
         return redirect('task_list', edition_name=edition.name)
@@ -343,38 +345,24 @@ def signup(request, edition, signup_form=SignupForm,
         ``form``
             Form supplied by ``signup_form``.
     """
-    # If signup is disabled, return 403
-    if userena_settings.USERENA_DISABLE_SIGNUP:
-        raise PermissionDenied
 
-    # If no usernames are wanted and the default form is used, fallback to the
-    # default form that doesn't display to enter the username.
-    if userena_settings.USERENA_WITHOUT_USERNAMES and (signup_form == SignupForm):
-        signup_form = SignupFormOnlyEmail
+    user = request.user
+    volunteer = volunteer_of(user)
 
     form = signup_form()
 
     if request.method == 'POST':
-        form = signup_form(request.POST, request.FILES)
+        form = EditProfileForm(request.POST, request.FILES, instance=volunteer)
         if form.is_valid():
-            user = form.save()
+            volunteer = form.save()
+            if edition in volunteer.editions.all():
+                volunteer.editions.add(edition)
+                volunteer = form.save()
 
-            # Send the signup complete signal
-            userena_signals.signup_complete.send(sender=None, user=user)
-
-            if success_url: redirect_to = success_url
-            else: redirect_to = reverse('userena_signup_complete', kwargs={'username': user.username, 'edition_name': edition.name})
-
-            # A new signed user should logout the old one.
-            if request.user.is_authenticated():
-                logout(request)
-
-            if (userena_settings.USERENA_SIGNIN_AFTER_SIGNUP and
-                not userena_settings.USERENA_ACTIVATION_REQUIRED):
-                user = authenticate(identification=user.email, check_password=False)
-                login(request, user)
-
+            redirect_to = reverse('profile_detail', kwargs={'username': volunteer.user.username, 'edition_name': edition.name})
             return redirect(redirect_to)
+    else:
+        form = EditProfileForm(instance=volunteer)
 
     if not extra_context: extra_context = dict()
     extra_context['form'] = form
@@ -428,9 +416,9 @@ def profile_edit(request, edition, volunteer, username, edit_profile_form=EditPr
         ``profile``
             Instance of the ``Profile`` that is edited.
     """
-    user = get_object_or_404(get_user_model(), username__iexact=username)
+    user = get_object_or_404(User, username__iexact=username)
 
-    profile = user.get_profile()
+    profile = volunteer_of(user)
 
     user_initial = {'first_name': user.first_name, 'last_name': user.last_name}
 
@@ -455,14 +443,10 @@ def profile_edit(request, edition, volunteer, username, edit_profile_form=EditPr
             #         profilecategory = VolunteerCategory.objects.filter(volunteer=profile, category=category)
             #         profilecategory.delete()
 
-            if userena_settings.USERENA_USE_MESSAGES:
-                messages.success(request, _('Your profile has been updated.'), fail_silently=True)
-
             if success_url:
                 # Send a signal that the profile has changed
-                userena_signals.profile_change.send(sender=None, user=user)
                 redirect_to = success_url
-            else: redirect_to = reverse('userena_profile_detail', kwargs={'username': username, 'edition_name': edition.name})
+            else: redirect_to = reverse('profile_detail', kwargs={'username': volunteer.user.username, 'edition_name': edition.name})
             return redirect(redirect_to)
 
     if not extra_context: extra_context = dict()
@@ -496,23 +480,19 @@ def profile_detail(request, edition, username,
         ``profile``
             Instance of the currently viewed ``Profile``.
     """
-    user = get_object_or_404(get_user_model(), username__iexact=username)
+    user = get_object_or_404(User, username__iexact=username)
     current_tasks = Task.objects.filter(edition=edition)
 
-    profile_model = get_profile_model()
-    try:
-        profile = user.get_profile()
-    except profile_model.DoesNotExist:
-        profile = profile_model.objects.create(user=user)
+    profile = volunteer_of(user)
 
     if not profile.can_view_profile(request.user):
         raise PermissionDenied
     if not extra_context: extra_context = dict()
     extra_context['edition'] = edition
-    extra_context['profile'] = user.get_profile()
+    extra_context['profile'] = user.volunteer
     extra_context['tasks'] = current_tasks.filter(volunteers__user=user)
-    extra_context['hide_email'] = userena_settings.USERENA_HIDE_EMAIL
-    check_profile_completeness(request, user.get_profile())
+    extra_context['hide_email'] = True # userena_settings.USERENA_HIDE_EMAIL
+    check_profile_completeness(request, user.volunteer)
     return ExtraContextTemplateView.as_view(template_name=template_name, extra_context=extra_context)(request)
 
 class ProfileListView(ListView):
@@ -520,7 +500,7 @@ class ProfileListView(ListView):
     context_object_name='profile_list'
     page=1
     paginate_by=50
-    template_name=userena_settings.USERENA_PROFILE_LIST_TEMPLATE
+    template_name="userena/profile_list.html" #userena_settings.USERENA_PROFILE_LIST_TEMPLATE
     extra_context=None
 
     def get_context_data(self, **kwargs):
@@ -531,9 +511,9 @@ class ProfileListView(ListView):
         except (TypeError, ValueError):
             page = self.page
 
-        if userena_settings.USERENA_DISABLE_PROFILE_LIST \
-           and not self.request.user.is_staff:
-            raise Http404
+#        if userena_settings.USERENA_DISABLE_PROFILE_LIST \
+#           and not self.request.user.is_staff:
+#            raise Http404
 
         if not self.extra_context: self.extra_context = dict()
 
@@ -546,7 +526,23 @@ class ProfileListView(ListView):
         return context
 
     def get_queryset(self):
-        profile_model = get_profile_model()
-        queryset = profile_model.objects.get_visible_profiles(self.request.user).select_related().extra(\
+        edition = Edition.objects.get(name=self.kwargs['edition_name'])
+        queryset = Volunteer.objects.get_visible_profiles(self.request.user).select_related().extra(\
             select={'lower_name': 'lower(first_name)'}).order_by('lower_name')
         return queryset
+
+
+# From Userena
+class ExtraContextTemplateView(TemplateView):
+    """ Add extra context to a simple template view """
+    extra_context = None
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ExtraContextTemplateView, self).get_context_data(*args, **kwargs)
+        if self.extra_context:
+            context.update(self.extra_context)
+        return context
+
+    # this view is used in POST requests, e.g. signup when the form is not valid
+    post = TemplateView.get
+

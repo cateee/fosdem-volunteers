@@ -3,7 +3,10 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from userena.models import UserenaLanguageBaseProfile
+from django.utils.datastructures import SortedDict
+#from userena.models import UserenaLanguageBaseProfile
+
+from userian import UserenaLanguageBaseProfile, UserenaBaseProfile
 
 import datetime
 # from dateutil import relativedelta
@@ -535,6 +538,14 @@ class Volunteer(UserenaLanguageBaseProfile):
             # Don't bug them if the connection can't be established
             return True
 
+    # implement some userena methods
+    def can_view_profile(self, user):
+        if isinstance(user, User):
+            return True
+        return False
+    def get_mugshot_url(self):
+        return "/static/foo.png"
+
 """
 Many volunteers come back year after year, but sometimes they
 take a hiatus of one or multiple years. This is there to capture
@@ -592,7 +603,7 @@ class VolunteerLanguage(models.Model):
         verbose_name_plural = _('VolunteerLanguages')
 
     def __unicode__(self):
-        return language.name.name
+        return self.language.name
 
     volunteer = models.ForeignKey(Volunteer)
     language = models.ForeignKey(Language)
