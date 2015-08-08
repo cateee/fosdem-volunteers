@@ -24,7 +24,7 @@
                 {% for talk in talks %}
                 <tr>
                     <td data-title="{% trans 'Going' %}!"><input type="checkbox" name="talk" value="{{ talk.id }}" {{ checked|get_item:talk.id }} /></td>
-                    <td data-title="{% trans 'Title' %}"><a href="{% url 'talk_detailed' talk.id %}">{{ talk.title }}</a></td>
+                    <td data-title="{% trans 'Title' %}"><a href="{% url 'talk_detailed' edition.name talk.id %}">{{ talk.title }}</a></td>
                     <td data-title="{% trans 'When' %}">{{ talk.date|date:"D" }}, {{ talk.start_time|time:"H:i" }} - {{ talk.end_time|time:"H:i" }}</td>
                     <td data-title="{% trans 'Speaker' %}">{{ talk.speaker }}</td>
                     <td data-title="{% trans 'Attending' %}" class="numeric talk-volunteers" title="Attending:<br/>{% for volunteer in talk.volunteers.all %}* {{ volunteer.user.first_name }} {{ volunteer.user.last_name}} ({{ volunteer.user }})<br/>{% endfor %}">{{ talk.assigned_volunteers }}</td>
@@ -43,7 +43,7 @@
 <div class="pagination">
     <span class="step-links">
         {% if page_obj.has_previous %}
-        <a href="{% url 'userena_profile_list_paginated' page_obj.previous_page_number %}">{% trans 'previous' %}</a>
+        <a href="{% url 'userena_profile_list_paginated' edition.name page_obj.previous_page_number %}">{% trans 'previous' %}</a>
         {% endif %}
 
         <span class="current">
@@ -51,7 +51,7 @@
         </span>
 
         {% if page_obj.has_next %}
-        <a href="{% url 'userena_profile_list_paginated'  page_obj.next_page_number %}">{% trans 'next' %}</a>
+        <a href="{% url 'userena_profile_list_paginated' edition.name page_obj.next_page_number %}">{% trans 'next' %}</a>
         {% endif %}
     </span>
 </div>

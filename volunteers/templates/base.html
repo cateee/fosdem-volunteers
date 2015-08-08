@@ -28,50 +28,50 @@
         {% endif %}
         <div id="container">
             <div id="header">
-                <h2 class="intro mobile-intro"><a href="{% url 'promo' %}"><span>FOSDEM</span></a></h2>
+                <h2 class="intro mobile-intro"><a href="{% url 'promo' edition.name %}"><span>FOSDEM</span></a></h2>
                 <span class="menu-button">&#9776;</span>
                 <nav class="list" id="nav1">
                     <ul class="nav">
-                        <li><a href="{% url 'promo' %}"><span>{% trans 'Home' %}</span></a></li>
+                        <li><a href="{% url 'promo' edition.name %}"><span>{% trans 'Home' %}</span></a></li>
                         {% if user.is_authenticated %}
-                            <li><a href="{% url 'userena_profile_list' %}"><span>{% trans 'Profiles' %}</span></a></li>
-                        <!-- TODO: fix it :P <li><a href="{% url 'userena_umessages_list' %}"><span>{% trans 'Messages' %}</span></a></li> -->
+                            <li><a href="{% url 'userena_profile_list' edition.name %}"><span>{% trans 'Profiles' %}</span></a></li>
+                        <!-- TODO: fix it :P <li><a href="{% url 'userena_umessages_list' edition.name %}"><span>{% trans 'Messages' %}</span></a></li> -->
                         {% endif %}
-                        <li><a href="{% url 'task_list' %}"><span>{% trans 'Tasks' %}</span></a></li>
-                        <li><a href="{% url 'faq' %}"><span>{% trans 'FAQ' %}</span></a></li>
+                        <li><a href="{% url 'task_list' edition.name %}"><span>{% trans 'Tasks' %}</span></a></li>
+                        <li><a href="{% url 'faq' edition.name %}"><span>{% trans 'FAQ' %}</span></a></li>
                         {% if user.is_authenticated %}
-                            <li><a href="{% url 'talk_list' %}"><span>{% trans 'Talks' %}</span></a></li>
+                            <li><a href="{% url 'talk_list' edition.name %}"><span>{% trans 'Talks' %}</span></a></li>
                             {% if user.is_staff %}
-                                <li><a href="{% url 'category_schedule_list' %}"><span>{% trans 'Task Schedules' %}</span></a></li>
+                                <li><a href="{% url 'category_schedule_list' edition.name %}"><span>{% trans 'Task Schedules' %}</span></a></li>
                             {% endif %}
-                            <li><a href="{% url 'userena_profile_detail' user.username %}"><span>{% trans 'Account' %} ({{ user.username }})</span></a></li>
-                            <li><a href="{% url 'userena_signout' %}"><span>{% trans 'Signout' %}</span></a></li>
+                            <li><a href="{% url 'userena_profile_detail' edition.name user.username %}"><span>{% trans 'Account' %} ({{ user.username }})</span></a></li>
+                            <li><a href="{% url 'userena_signout' edition.name %}"><span>{% trans 'Signout' %}</span></a></li>
                         {% else %}
-                            <li><a href="{% url 'userena_signin' %}"><span>{% trans 'Signin' %}</span></a></li>
-                            <li><a href="{% url 'userena_signup' %}"><span>{% trans 'Signup' %}</span></a></li>
+                            <li><a href="{% url 'userena_signin' edition.name %}"><span>{% trans 'Signin' %}</span></a></li>
+                            <li><a href="{% url 'userena_signup' edition.name %}"><span>{% trans 'Signup' %}</span></a></li>
                         {% endif %}
                     </ul>
                 </nav>
             
                 {% block nav %}
                 <ul id="nav">
-                    <li><a href="{% url 'promo' %}"><span>{% trans 'Home' %}</span></a></li>
+                    <li><a href="{% url 'promo' edition.name %}"><span>{% trans 'Home' %}</span></a></li>
                     {% if user.is_authenticated %}
-                        <li><a href="{% url 'userena_profile_list' %}"><span>{% trans 'Profiles' %}</span></a></li>
-                    <!-- TODO: fix it :P <li><a href="{% url 'userena_umessages_list' %}"><span>{% trans 'Messages' %}</span></a></li> -->
+                        <li><a href="{% url 'userena_profile_list' edition.name %}"><span>{% trans 'Profiles' %}</span></a></li>
+                    <!-- TODO: fix it :P <li><a href="{% url 'userena_umessages_list' edition.name %}"><span>{% trans 'Messages' %}</span></a></li> -->
                     {% endif %}
-                    <li><a href="{% url 'task_list' %}"><span>{% trans 'Tasks' %}</span></a></li>
-                    <li><a href="{% url 'faq' %}"><span>{% trans 'FAQ' %}</span></a></li>
+                    <li><a href="{% url 'task_list' edition.name %}"><span>{% trans 'Tasks' %}</span></a></li>
+                    <li><a href="{% url 'faq' edition.name %}"><span>{% trans 'FAQ' %}</span></a></li>
                     {% if user.is_authenticated %}
-                        <li><a href="{% url 'talk_list' %}"><span>{% trans 'Talks' %}</span></a></li>
+                        <li><a href="{% url 'talk_list' edition.name %}"><span>{% trans 'Talks' %}</span></a></li>
                         {% if user.is_staff %}
-                            <li><a href="{% url 'category_schedule_list' %}"><span>{% trans 'Task Schedules' %}</span></a></li>
+                            <li><a href="{% url 'category_schedule_list' edition.name %}"><span>{% trans 'Task Schedules' %}</span></a></li>
                         {% endif %}
-                        <li><a href="{% url 'userena_profile_detail' user.username %}"><span>{% trans 'Account' %} ({{ user.username }})</span></a></li>
-                        <li><a href="{% url 'userena_signout' %}"><span>{% trans 'Signout' %}</span></a></li>
+                        <li><a href="{% url 'userena_profile_detail' edition.name user.username %}"><span>{% trans 'Account' %} ({{ user.username }})</span></a></li>
+                        <li><a href="{% url 'userena_signout' edition.name %}"><span>{% trans 'Signout' %}</span></a></li>
                     {% else %}
-                        <li><a href="{% url 'userena_signin' %}"><span>{% trans 'Signin' %}</span></a></li>
-                        <li><a href="{% url 'userena_signup' %}"><span>{% trans 'Signup' %}</span></a></li>
+                        <li><a href="{% url 'userena_signin' edition.name %}"><span>{% trans 'Signin' %}</span></a></li>
+                        <li><a href="{% url 'userena_signup' edition.name %}"><span>{% trans 'Signup' %}</span></a></li>
                     {% endif %}
                 </ul>
                 {% endblock %}

@@ -12,6 +12,7 @@ from django.core.urlresolvers import reverse
 from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext as _
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
 from userena.utils import get_user_model
 from userena.forms import SignupFormOnlyEmail
@@ -29,6 +30,37 @@ from django.template.loader import get_template
 from django.template import Context
 from cgi import escape
 
+# decorators
+
+def edition_required(func):
+    def inner(request, edition_name, *args, **kwds):
+        edition = get_object_or_404(Edition, name=edition_name)
+        return func(request, edition, *args, **kwds)
+    inner.__name__ = func.__name__
+    return inner
+
+def volunteer_required(func):
+    def inner(request, edition_name, *args, **kwds):
+        edition = get_object_or_404(Edition, name=edition_name)
+        try:
+            if request.user.is_authenticated():
+                volunteer = get_object_or_404(Volunteer, user=request.user)
+            else:
+                return redirect('promo', edition_name)
+        except ObjectDoesNotExist:
+            return redirect('promo', edition_name)
+        return func(request, edition, volunteer, *args, **kwds)
+    inner.__name__ = func.__name__
+    return inner
+
+
+def volunteer_of(user):
+    try:
+        return Volunteer.objects.get(user__username__iexact=user.username)
+    except Volunteer.DoesNotExist:
+        return None
+
+
 def check_profile_completeness(request, volunteer):
     if request.user != volunteer.user:
         return True
@@ -37,28 +69,30 @@ def check_profile_completeness(request, volunteer):
     if not volunteer.mobile_nbr:
         messages.warning(request, _("Hey there! It seems you didn't give us a phone number. Please update your profile, or be the last to know the pizza's here..."), fail_silently=True)
 
-def faq(request):
-    return render(request, 'static/faq.html')
+@edition_required
+def faq(request, edition):
+    context = { 'edition': edition }
+    return render(request, 'static/faq.html', context)
 
-def promo(request):
-    return render(request, 'static/promo.html')
+@edition_required
+def promo(request, edition):
+    context = { 'edition': edition }
+    return render(request, 'static/promo.html', context)
 
-@login_required
-def talk_detailed(request, talk_id):
+@volunteer_required
+def talk_detailed(request, edition, volunteer, talk_id):
     talk = get_object_or_404(Talk, id=talk_id)
-    context = { 'talk': talk }
+    context = { 'talk': talk, 'edition': edition }
     return render(request, 'volunteers/talk_detailed.html', context)
 
-def task_detailed(request, task_id):
+@edition_required
+def task_detailed(request, edition, task_id):
     task = get_object_or_404(Task, id=task_id)
-    context = { 'task': task }
+    context = { 'task': task, 'edition': edition }
     return render(request, 'volunteers/task_detailed.html', context)
 
-@login_required
-def talk_list(request):
-    # get the signed in volunteer
-    volunteer = Volunteer.objects.get(user=request.user)
-
+@volunteer_required
+def talk_list(request, edition, volunteer):
     # when the user submitted the form
     if request.method == 'POST':
         # get the checked tasks
@@ -79,11 +113,11 @@ def talk_list(request):
             messages.success(request, _('Your talks have been updated.'), fail_silently=True)
 
         # redirect to prevent repost
-        return redirect('talk_list')
+        return redirect('talk_list', edition_name=edition.name)
 
     # group the talks according to tracks
-    context = { 'tracks': {}, 'checked': {} }
-    tracks = Track.objects.filter(edition=Edition.get_current)
+    context = { 'tracks': {}, 'checked': {}, 'edition': edition }
+    tracks = Track.objects.filter(edition=edition)
     for track in tracks:
         context['tracks'][track.title] = Talk.objects.filter(track=track)
 
@@ -94,19 +128,22 @@ def talk_list(request):
     return render(request, 'volunteers/talks.html', context)
 
 @login_required
-def category_schedule_list(request):
+@edition_required
+def category_schedule_list(request, edition):
     categories = TaskCategory.objects.filter(active=True)
-    context = {'categories': SortedDict.fromkeys(categories, [])}
+    context = {'categories': SortedDict.fromkeys(categories, []), 'edition': edition}
     for category in context['categories']:
         context['categories'][category] = TaskTemplate.objects.filter(category=category)
     return render(request, 'volunteers/category_schedule_list.html', context)
 
 @login_required
-def task_schedule(request, template_id):
+@edition_required
+def task_schedule(request, edition, template_id):
     template = TaskTemplate.objects.filter(id=template_id)[0]
     tasks = Task.objects.filter(template=template, edition=Edition.get_current).order_by('date', 'start_time', 'end_time')
     context = {
         'template': template,
+        'edition': edition,
         'tasks': SortedDict.fromkeys(tasks, {}),
     }
     for task in context['tasks']:
@@ -114,7 +151,8 @@ def task_schedule(request, template_id):
     return render(request, 'volunteers/task_schedule.html', context)
 
 @login_required
-def task_schedule_csv(request, template_id):
+@edition_required
+def task_schedule_csv(request, edition, template_id):
     template = TaskTemplate.objects.filter(id=template_id)[0]
     tasks = Task.objects.filter(template=template, edition=Edition.get_current).order_by('date', 'start_time', 'end_time')
     response = HttpResponse(content_type='text/csv')
@@ -147,14 +185,15 @@ def task_schedule_csv(request, template_id):
         writer.writerow([unicode(s).encode("utf-8") for s in row])
     return response
 
-def task_list(request):
+@edition_required
+def task_list(request, edition):
     # get the signed in volunteer
     if request.user.is_authenticated():
         volunteer = Volunteer.objects.get(user=request.user)
     else:
         volunteer = None
         is_dr_manhattan = False
-    current_tasks = Task.objects.filter(edition=Edition.get_current)
+    current_tasks = Task.objects.filter(edition=edition)
     if volunteer:
         is_dr_manhattan, dr_manhattan_task_sets = volunteer.detect_dr_manhattan()
         dr_manhattan_task_ids = [x.id for x in set.union(*dr_manhattan_task_sets)] if dr_manhattan_task_sets else []
@@ -182,7 +221,7 @@ def task_list(request):
             messages.success(request, _('Your tasks have been updated.'), fail_silently=True)
 
         # redirect to prevent repost
-        return redirect('task_list')
+        return redirect('task_list', edition_name=edition.name)
 
     # get the preferred and other tasks, preserve key order with srteddict for view
     context = {
@@ -190,6 +229,7 @@ def task_list(request):
         'checked': {},
         'attending': {},
         'is_dr_manhattan': is_dr_manhattan,
+        'edition': edition,
     }
     # get the categories the volunteer is interested in
     if volunteer:
@@ -244,8 +284,9 @@ def render_to_pdf(request, template_src, context_dict):
     return HttpResponse('We had some errors<pre>%s</pre>' % escape(html))
 
 @login_required
-def task_list_detailed(request, username):
-    context = {}
+@edition_required
+def task_list_detailed(request, edition, username):
+    context = {'edition': edition}
     current_tasks = Task.objects.filter(edition=Edition.get_current)
     # get the requested users tasks
     context['tasks'] = current_tasks.filter(volunteers__user__username=username)
@@ -267,8 +308,9 @@ def task_list_detailed(request, username):
 
     return render(request, 'volunteers/tasks_detailed.html', context)
 
-@secure_required
-def signup(request, signup_form=SignupForm,
+@login_required
+@edition_required
+def signup(request, edition, signup_form=SignupForm,
            template_name='userena/signup_form.html', success_url=None,
            extra_context=None):
     """
@@ -321,7 +363,7 @@ def signup(request, signup_form=SignupForm,
             userena_signals.signup_complete.send(sender=None, user=user)
 
             if success_url: redirect_to = success_url
-            else: redirect_to = reverse('userena_signup_complete', kwargs={'username': user.username})
+            else: redirect_to = reverse('userena_signup_complete', kwargs={'username': user.username, 'edition_name': edition.name})
 
             # A new signed user should logout the old one.
             if request.user.is_authenticated():
@@ -336,12 +378,14 @@ def signup(request, signup_form=SignupForm,
 
     if not extra_context: extra_context = dict()
     extra_context['form'] = form
+    extra_context['edition'] = edition
     return ExtraContextTemplateView.as_view(template_name=template_name, extra_context=extra_context)(request)
 
 @secure_required
 @login_required
 @permission_required_or_403('change_profile', (get_profile_model(), 'user__username', 'username'))
-def profile_edit(request, username, edit_profile_form=EditProfileForm,
+@volunteer_required
+def profile_edit(request, edition, volunteer, username, edit_profile_form=EditProfileForm,
                  template_name='userena/profile_form.html', success_url=None,
                  extra_context=None, **kwargs):
     """
@@ -418,18 +462,20 @@ def profile_edit(request, username, edit_profile_form=EditProfileForm,
                 # Send a signal that the profile has changed
                 userena_signals.profile_change.send(sender=None, user=user)
                 redirect_to = success_url
-            else: redirect_to = reverse('userena_profile_detail', kwargs={'username': username})
+            else: redirect_to = reverse('userena_profile_detail', kwargs={'username': username, 'edition_name': edition.name})
             return redirect(redirect_to)
 
     if not extra_context: extra_context = dict()
     extra_context['form'] = form
     extra_context['profile'] = profile
+    extra_context['edition'] = edition
     return ExtraContextTemplateView.as_view(template_name=template_name,
                                             extra_context=extra_context)(request)
 
 @login_required
-def profile_detail(request, username,
-    template_name=userena_settings.USERENA_PROFILE_DETAIL_TEMPLATE,
+@edition_required
+def profile_detail(request, edition, username,
+    template_name="userena/profile_detail.html", #userena_settings.USERENA_PROFILE_DETAIL_TEMPLATE,
     extra_context=None, **kwargs):
     """
         Detailed view of an user.
@@ -451,7 +497,7 @@ def profile_detail(request, username,
             Instance of the currently viewed ``Profile``.
     """
     user = get_object_or_404(get_user_model(), username__iexact=username)
-    current_tasks = Task.objects.filter(edition=Edition.get_current)
+    current_tasks = Task.objects.filter(edition=edition)
 
     profile_model = get_profile_model()
     try:
@@ -462,6 +508,7 @@ def profile_detail(request, username,
     if not profile.can_view_profile(request.user):
         raise PermissionDenied
     if not extra_context: extra_context = dict()
+    extra_context['edition'] = edition
     extra_context['profile'] = user.get_profile()
     extra_context['tasks'] = current_tasks.filter(volunteers__user=user)
     extra_context['hide_email'] = userena_settings.USERENA_HIDE_EMAIL
@@ -490,6 +537,8 @@ class ProfileListView(ListView):
 
         if not self.extra_context: self.extra_context = dict()
 
+        edition = Edition.objects.get(name=self.kwargs['edition_name'])
+        context['edition'] = edition
         context['page'] = page
         context['paginate_by'] = self.paginate_by
         context['extra_context'] = self.extra_context

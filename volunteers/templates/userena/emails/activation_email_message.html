@@ -6,7 +6,7 @@
     {% blocktrans with site.name as site %}<p>Thank you for volunteering for FOSDEM. As you might know, as a staff member, I am a volunteer too. I really appreciate your contribution!</p>{% endblocktrans %}
     <p>
         {% trans "To activate your account, please click the link below:" %}<br />
-        {{ protocol }}://{{ site.domain }}{% url 'userena_activate' activation_key %}
+        {{ protocol }}://{{ site.domain }}{% url 'userena_activate' edition.name activation_key %}
     </p>
     <p>
         To work together efficiently, we could really use a recognisable id photo, a mobile phone number (to reach you during FOSDEM only), and tasks you will work on.
