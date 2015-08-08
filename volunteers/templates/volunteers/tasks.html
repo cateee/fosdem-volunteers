@@ -6,6 +6,11 @@
 {% block content_title %}<h2 class="content-title">{% trans 'Tasks' %}</h2>{% endblock %}
 
 {% block content %}
+<p class="select_day_menu">
+  schedule: {% for select_day in days %}<a href="{% url 'task_grid' edition.name select_day %}">{{select_day}}</a>{% if not forloop.last %}|{% endif %}{% endfor %}
+|<strong>as list</strong>
+</p>                                                                                                                                                                     
+
 {% if user.is_authenticated %}<a class="larger-font" href="{% url 'task_list_detailed' edition.name user.username %}" title="View schedule">View your schedule</a>{% endif %}
 <form class="task_list" action="{% url 'task_list' edition.name %}" method="post">{% csrf_token %}
     {% if is_dr_manhattan %}
@@ -74,7 +79,7 @@
     <fieldset>
         <legend class="task_list">{% trans title %} <span style="font-size: small; font-weight: normal;">
             {% if user.is_authenticated %}{% if title == 'preferred tasks' %}
-            (<a class="larger-font" href="{% url 'userena_profile_edit' edition.name user.username %}/edit">{% trans 'Change in profile' %}</a>)
+            (<a class="larger-font" href="{% url 'userena_profile_edit' edition.name user.username %}">{% trans 'Change in profile' %}</a>)
             {% endif %}{% endif %}
         </span></legend>
         <table class="task_list">
@@ -99,7 +104,7 @@
                 </tr>
                 {% endifchanged %}
                 <tr class="day">
-                    <th class="no_vert_border">{{ day|date:"l" }}</th>
+                    <th class="no_vert_border">{{ day|date:"l, j F" }}</th>
                     <th class="no_vert_border">&nbsp;</th>
                     <th class="no_vert_border">&nbsp;</th>
                     <th class="no_vert_border">&nbsp;</th>

@@ -10,10 +10,8 @@
 {% comment %}Dirty hack. Will use django-guardian in the future.{% endcomment %}
 {% if user.username == profile.user.username %}
 <ul id="profile-nav">
-    <li class="selected"><a href="{% url 'userena_profile_detail' edition.name user.username %}">{% trans "View profile" %}</a></li>
+    <li class="selected"><a href="{% url 'profile_detail' edition.name user.username %}">{% trans "View profile" %}</a></li>
     <li><a href="{% url 'userena_profile_edit' edition.name user.username %}">{% trans "Edit details" %}</a></li>
-    <li><a href="{% url 'userena_password_change' edition.name user.username %}">{% trans "Change password" %}</a></li>
-    <li><a href="{% url 'userena_email_change' edition.name user.username %}">{% trans "Change email" %}</a></li>
 </ul>
 {% endif %}
 

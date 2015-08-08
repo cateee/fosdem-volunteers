@@ -4,19 +4,46 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
     <head>
-        <title>{% block title %}FOSDEM Volunteers - Conquer the chaos!{% endblock %}</title>
+        <title>{% block title %}DebConf Volunteers - Conquer the chaos!{% endblock %}</title>
 
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-        <script type="text/javascript" src="{% static "js/jquery-1.10.2.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "js/jquery-ui-1.10.3.min.js" %}"></script>
-        <script type="text/javascript" src="{% static "js/main.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/jquery.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/jquery-ui.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "js/main-volunteer.js" %}"></script>
 
-        <link rel="stylesheet" type="text/css" media="screen" href="{% static "css/master.css" %}" />
-        <link rel="stylesheet" href="{% static "css/jquery-ui-1.10.3.css" %}">
+        <link rel="stylesheet" type="text/css" media="screen" href="{% static "css/master-volunteer.css" %}" />
+        <link rel="stylesheet" href="{% static "css/jquery-ui.css" %}">
         <link rel="shortcut icon" type="image/ico" href="/favicon.ico" />
+        {% block extra_header %}{% endblock extra_header %}
     </head>
     <body>
+        {% if not is_popup %}
+            {% block top_nav %}
+                <aside id="top-nav">
+                    <div class="{{ container_size|default:'container' }}">
+                        <section id="top-login">
+                            {% block top_nav_login_links_oauth2 %}
+                                {% if user.is_authenticated %}
+                                    Logged in as:
+                                        {{ user.email }}
+                                        <span class="top-login-separator">|</span>
+                                        {% if user.is_staff %}
+                                            <a class="top-login-item" href="/admin" title="Admin">Admin</a>
+                                            <span class="top-login-separator">|</span>
+                                        {% endif %}
+                                        <a class="top-login-item" href="{% url 'logout' %}" title="Log Out: {{ user.username }}">Log out</a>
+                                {% else %}
+                                    <a class="top-login-item" href="{{login_url}}?next={{login_next}}" title="Log In">Log in</a>
+                                {% endif %}
+                            {% endblock %}
+                        </section>
+                    </div>
+                </aside>
+            {% endblock %}
+        {% endif %}
+
+
         {% if messages %}
         <div id="top">
           <ul class="messages">
@@ -26,7 +53,7 @@
           </ul>
         </div>
         {% endif %}
-        <div id="container">
+        <div id="{{ container_size|default:'container' }}">
             <div id="header">
                 <h2 class="intro mobile-intro"><a href="{% url 'promo' edition.name %}"><span>FOSDEM</span></a></h2>
                 <span class="menu-button">&#9776;</span>
@@ -35,7 +62,6 @@
                         <li><a href="{% url 'promo' edition.name %}"><span>{% trans 'Home' %}</span></a></li>
                         {% if user.is_authenticated %}
                             <li><a href="{% url 'userena_profile_list' edition.name %}"><span>{% trans 'Profiles' %}</span></a></li>
-                        <!-- TODO: fix it :P <li><a href="{% url 'userena_umessages_list' edition.name %}"><span>{% trans 'Messages' %}</span></a></li> -->
                         {% endif %}
                         <li><a href="{% url 'task_list' edition.name %}"><span>{% trans 'Tasks' %}</span></a></li>
                         <li><a href="{% url 'faq' edition.name %}"><span>{% trans 'FAQ' %}</span></a></li>
@@ -44,21 +70,17 @@
                             {% if user.is_staff %}
                                 <li><a href="{% url 'category_schedule_list' edition.name %}"><span>{% trans 'Task Schedules' %}</span></a></li>
                             {% endif %}
-                            <li><a href="{% url 'userena_profile_detail' edition.name user.username %}"><span>{% trans 'Account' %} ({{ user.username }})</span></a></li>
-                            <li><a href="{% url 'userena_signout' edition.name %}"><span>{% trans 'Signout' %}</span></a></li>
                         {% else %}
-                            <li><a href="{% url 'userena_signin' edition.name %}"><span>{% trans 'Signin' %}</span></a></li>
-                            <li><a href="{% url 'userena_signup' edition.name %}"><span>{% trans 'Signup' %}</span></a></li>
+                                <li><a href="{% url 'signup' edition.name %}"><span>{% trans 'Signup' %}</span></a></li>
                         {% endif %}
                     </ul>
                 </nav>
             
                 {% block nav %}
                 <ul id="nav">
-                    <li><a href="{% url 'promo' edition.name %}"><span>{% trans 'Home' %}</span></a></li>
+                    <li><a href="{% url 'promo' edition.name%}"><span>{% trans 'Home' %}</span></a></li>
                     {% if user.is_authenticated %}
-                        <li><a href="{% url 'userena_profile_list' edition.name %}"><span>{% trans 'Profiles' %}</span></a></li>
-                    <!-- TODO: fix it :P <li><a href="{% url 'userena_umessages_list' edition.name %}"><span>{% trans 'Messages' %}</span></a></li> -->
+                        <li><a href="{% url 'userena_profile_list' edition.name%}"><span>{% trans 'Profiles' %}</span></a></li>
                     {% endif %}
                     <li><a href="{% url 'task_list' edition.name %}"><span>{% trans 'Tasks' %}</span></a></li>
                     <li><a href="{% url 'faq' edition.name %}"><span>{% trans 'FAQ' %}</span></a></li>
@@ -67,11 +89,8 @@
                         {% if user.is_staff %}
                             <li><a href="{% url 'category_schedule_list' edition.name %}"><span>{% trans 'Task Schedules' %}</span></a></li>
                         {% endif %}
-                        <li><a href="{% url 'userena_profile_detail' edition.name user.username %}"><span>{% trans 'Account' %} ({{ user.username }})</span></a></li>
-                        <li><a href="{% url 'userena_signout' edition.name %}"><span>{% trans 'Signout' %}</span></a></li>
                     {% else %}
-                        <li><a href="{% url 'userena_signin' edition.name %}"><span>{% trans 'Signin' %}</span></a></li>
-                        <li><a href="{% url 'userena_signup' edition.name %}"><span>{% trans 'Signup' %}</span></a></li>
+                        <li><a href="{% url 'signup' edition.name %}"><span>{% trans 'Signup' %}</span></a></li>
                     {% endif %}
                 </ul>
                 {% endblock %}
@@ -85,7 +104,7 @@
                 {% block content %}{% endblock %}
             </div><!-- /content-container-->
 
-            <div id="footer"><p>Built by FOSDEM volunteers for FOSDEM volunteers!</p></div>
+            <div id="footer"><p>Built by FOSDEM volunteers for FOSDEM volunteers!</br>Adapted by DebConf volunteers for DebConf volunteers!</p></div>
         </div><!-- /container-->
     </body>
  </html>

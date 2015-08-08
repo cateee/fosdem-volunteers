@@ -29,6 +29,20 @@ html, body {
     padding: 0 10px;
 }
 
+#large-container {
+    width: 99%;
+    margin: 30px auto 50px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+    border-radius: 8px;
+    -moz-box-shadow: 0 0 3px #999;
+    -webkit-box-shadow: 0 0 3px #999;
+    box-shadow: 0 0 3px #999;
+    background-color: #f6f4f2;
+    border: 1px solid #fff;
+    padding: 0 10px;
+}
+
 #top {
     height: 30px;
     background-color: #111;
@@ -117,7 +131,7 @@ html, body {
 #intro {
     padding: 30px 20px;
     min-height: 200px;
-    background: #e7e2de url(https://fosdem.org/2014/assets/style/bg-visual-panel-73f1975ffc7435da092f7de492966249bd09606d7e9d6241cc31591203c5a2d6.png) no-repeat 90px 40px;
+    background: #e7e2de url(https://summit.debconf.org/static/debconf_website/images/header-swirl.png) no-repeat 90px 40px;
     -moz-border-radius: 8px;
     -webkit-border-radius: 8px;
     border-radius: 8px;
@@ -1610,3 +1624,51 @@ a:hover {
         font-size: 2.5em;
     }
 }
+
+#top-nav {                                                                                                                                            
+    font-size:11px;                                                                                                                                   
+    margin:0 auto;                                                                                                                                    
+    line-height: 2em;                                                                                                                                 
+    height: 22px;                                                                                                                                     
+}                                                                                                                                                     
+                                                                                                                                                      
+                                                                                                                                                      
+.top-nav-item {                                                                                                                                       
+    display:inline-block;                                                                                                                             
+    margin-right: 14px;                                                                                                                               
+    line-height:2em;                                                                                                                                  
+}                                                                                                                                                     
+                                                                                                                                                      
+#top-login {                                                                                                                                          
+    display:inline-block;                                                                                                                             
+    margin-right:15px;                                                                                                                                
+    float:right;                                                                                                                                      
+}                                                                                                                                                     
+                                                                                                                                                      
+.top-login-item {                                                                                                                                     
+    display:inline-block;                                                                                                                             
+    padding:0 8px;                                                                                                                                    
+    line-height:2em;                                                                                                                                  
+}                                                                                                                                                     
+                                                                                                                                                      
+#top-nav {                                                                                                                                            
+    background-color:#ffffff;                                                                                                                         
+}                                                                                                                                                     
+                                                                                                                                                      
+.top-nav-item, .top-nav-item:visited {                                                                                                                
+    color:#333333;                                                                                                                                    
+}                                                                                                                                                     
+                                                                                                                                                      
+.top-nav-item:hover {                                                                                                                                 
+    text-decoration: underline;                                                                                                                       
+}                                                                                                                                                     
+                                                                                                                                                      
+.top-login-item {                                                                                                                                     
+    color:#dd4814;                                                                                                                                    
+}                                                                                                                                                     
+                                                                                                                                                      
+.top-login-item:hover {                                                                                                                               
+    text-decoration: underline;                                                                                                                       
+}                                                                                                                                                     
+                                                                                                                                                      
+

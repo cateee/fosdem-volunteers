@@ -6,7 +6,7 @@
 {% block content_title %}<h2 class="content-title">{% trans 'Talks' %}</h2>{% endblock %}
 
 {% block content %}
-<form class="task_list" action="/talks/" method="post">{% csrf_token %}
+<form class="task_list" action="{% url 'talk_list' edition.name %}" method="post">{% csrf_token %}
     {% for track, talks in tracks.items %}
     <fieldset>
         <legend class="talk_list">{{ track }}</legend>

@@ -6,28 +6,28 @@
 {% block content_title %}<h2 class="content-title">{% trans 'Task' %}</h2>{% endblock %}
 
 {% block content %}
-<form class="task_list">{% csrf_token %}
+<form class="task_list" action="{% url 'task_detailed' edition.name task.id%}" method="post">{% csrf_token %}
     <fieldset>
         <legend class="task_list">{% trans 'Task' %}</legend>
         <table class="task_list">
             <tr>
+                <th width="20%">{% trans "I'm in" %}!</th>
                 <th width="20%">{% trans 'When' %}</th>
                 <th width="40%">{% trans 'Title' %}</th>
                 <th width="20%">{% trans 'Attending' %}</th>
-                <th width="20%">{% trans 'Talk' %}</th>
             </tr>
             <tr>
+                <td>{% if user.is_authenticated %}check below{% endif %}</td>
                 <td>{{ task.date|date:"D" }}, {{ task.start_time|time:"H:i" }} - {{ task.end_time|time:"H:i" }}</td>
                 <td>{{ task.name }}</td>
                 <td>
                     {% if user.is_authenticated %}
                     {% for volunteer in task.volunteer_set.all %}
-                        <a href="{% url 'profile_detail' edition.name volunteer.user.username %}">{{ volunteer.user.first_name }} {{ volunteer.user.last_name }},</a>
+                        <a href="{% url 'profile_detail' edition.name volunteer.user.username %}">{{ volunteer.nick }} (<small>{{ volunteer.user.first_name }} {{ volunteer.user.last_name }}</small>){% if not forloop.last %},{% endif %}</a>
                     {% endfor %}
                     {% else %}
                         {{ task.volunteer_set.count}}/{{ task.nbr_volunteers }}
                     {% endif%}
-                <td>{{ task.talk }}</td>
             </tr>
             <tr>
                 <th colspan="4" style="border-bottom: none;">&nbsp;</th>
@@ -38,6 +38,41 @@
         </table>
         <br>
     </fieldset>
+
+    <fieldset>
+        <legend class="task_list">{% trans 'Related tasks' %}</legend>
+        <table class="task_list">
+            <tr>
+                <th width="20%">{% trans "I'm in" %}!</th>
+                <th width="20%">{% trans 'When' %}</th>
+                <th width="40%">{% trans 'Title' %}</th>
+                <th width="20%">{% trans 'Attending' %}</th>
+            </tr>
+            {% for task in related_tasks %}
+              <tr>
+                  <td>{% if user.is_authenticated %}<input type="checkbox" name="task" value="{{ task.id }}" {{ checked|get_item:task.id }} />{% endif %}</td>
+                  <td>{{ task.date|date:"D" }}, {{ task.start_time|time:"H:i" }} - {{ task.end_time|time:"H:i" }}</td>
+                  <td>{{ task.name }}</td>
+                  <td>
+                      {% if user.is_authenticated %}
+                      {% for volunteer in task.volunteer_set.all %}
+                          <a href="{% url 'profile_detail' edition.name volunteer.user.username %}">{{ volunteer.nick }} (<small>{{ volunteer.user.first_name }} {{ volunteer.user.last_name }}</small>){% if not forloop.last %},{% endif %}</a>
+                      {% endfor %}
+                      {% else %}
+                          {{ task.volunteer_set.count}}/{{ task.nbr_volunteers }}
+                      {% endif%}
+              </tr>
+            {% endfor %}
+            <tr>
+                <th colspan="4" style="border-bottom: none;">&nbsp;</th>
+            </tr>
+            <tr>
+                <td colspan="4">{{ task.description|linebreaksbr }}</td>
+            </tr>
+        </table>
+        <br>
+    </fieldset>
+    <input type="submit" value="{% trans "Save changes" %}" />
 </form>
 
 <div id="dialog" title="Task"></div>
