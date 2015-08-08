@@ -22,8 +22,8 @@ class SignupForm(forms.ModelForm):
 
 class EditProfileForm(forms.ModelForm):
     """ Base form used for fields that are always required """
-    first_name = forms.CharField(label=_(u'First name'), max_length=30, required=True)
-    last_name = forms.CharField(label=_(u'Last name'), max_length=30, required=True)
+    #first_name = forms.CharField(label=_(u'First name'), max_length=30, required=True)
+    #last_name = forms.CharField(label=_(u'Last name'), max_length=30, required=True)
 
     # categories = forms.ModelMultipleChoiceField(label=_(u'Categories'), queryset=TaskCategory.objects.all(), \
     #     widget=forms.CheckboxSelectMultiple(), required=False, \
@@ -35,14 +35,10 @@ class EditProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kw):
         super(EditProfileForm, self).__init__(*args, **kw)
-        # Put the first and last name at the top
-        new_order = self.fields.keyOrder[:-2]
-        new_order.insert(0, 'first_name')
-        new_order.insert(1, 'last_name')
-        self.fields.keyOrder = new_order
 
     class Meta:
         model = Volunteer
+        fields = ('badge_name', 'nick', 'contact_email', 'about_me', 'mobile_nbr')
         exclude = ['user', 'editions', 'tasks', 'signed_up', 'language', 'privacy', 'private_staff_rating', 'private_staff_notes', 'categories']
 
     def save(self, force_insert=False, force_update=False, commit=True):

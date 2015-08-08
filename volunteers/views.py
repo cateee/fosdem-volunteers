@@ -55,6 +55,11 @@ def volunteer_required(func):
     inner.__name__ = func.__name__
     return inner
 
+def summit_of(edition):
+    try:
+        return Summit.objects.get(name=edition.name)
+    except ObjectDoesNotExist:
+        return None
 
 def volunteer_of(user):
     try:
@@ -189,6 +194,7 @@ def task_schedule_csv(request, edition, template_id):
 
 @edition_required
 def task_list(request, edition):
+    summit = get_object_or_404(Summit, name=edition.name)
     # get the signed in volunteer
     if request.user.is_authenticated():
         volunteer = Volunteer.objects.get(user=request.user)
@@ -270,7 +276,8 @@ def task_list(request, edition):
     else:
         for task in current_tasks:
             context['attending'][task.id] = False
-
+    
+    context['days'] = [date.strftime("%Y-%m-%d") for date in summit.days()]
     return render(request, 'volunteers/tasks.html', context)
 
 @login_required
@@ -349,7 +356,12 @@ def signup(request, edition, signup_form=SignupForm,
     user = request.user
     volunteer = volunteer_of(user)
 
-    form = signup_form()
+    if not volunteer:
+        #summit = summit_of(edition)
+
+        volunteer = Volunteer(
+              user=user,
+        )
 
     if request.method == 'POST':
         form = EditProfileForm(request.POST, request.FILES, instance=volunteer)

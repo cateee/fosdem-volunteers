@@ -15,6 +15,8 @@ import httplib
 import urllib
 import vobject
 import xml.etree.ElementTree as ET
+from summit.schedule.forms import Registration
+from summit.schedule.models import Meeting, Slot, Summit
 
 # Parse dates, times, DRY
 def parse_datetime(date_str, format='%Y-%m-%d'):
@@ -25,6 +27,9 @@ def parse_date(date_str, format='%Y-%m-%d'):
 
 def parse_time(date_str, format='%H:%M'):
     return parse_datetime(date_str, format).time()
+
+def str_datetime(date, format="%Y-%m-%dT%H:%M:%SZ"):
+    return date.strftime(format)
 
 # More DRY: given a start hour and duration, return start and end time.
 def parse_hour_duration(start_str, duration_str, format='%H:%M'):
@@ -89,6 +94,26 @@ class Edition(models.Model):
         return edition
 
     @classmethod
+    def summit_create_or_update(cls, summit):
+        ed_name = summit.name
+        days = summit.days()
+        start_date = days[0]
+        end_date = days[-1]
+        visible_from = datetime.date(year=start_date.year - 1, month=8, day=1)
+        visible_until = datetime.date(year=start_date.year, month=7, day=31)
+        editions = cls.objects.filter(name=ed_name)
+        if len(editions):
+            edition = editions[0]
+        else:
+            edition = cls(name=ed_name)  # create if required
+        edition.start_date = start_date
+        edition.end_date = end_date
+        edition.visible_from = visible_from
+        edition.visible_until = visible_until
+        edition.save()
+        return edition
+
+    @classmethod
     def sync_with_penta(cls):
         penta_url = settings.SCHEDULE_SYNC_URI
         response = urllib.urlopen(penta_url)
@@ -131,6 +156,84 @@ class Edition(models.Model):
                         Task.create_or_update_from_talk(edition, talk, 'Video', [1, 1, 1])
 
 
+    @classmethod
+    def sync_with_summit(cls):
+        ###########
+        # Edition #
+        ###########
+        ed = "debconf15"  # to improve
+        summit = Summit.objects.get(name=ed)
+        edition = cls.summit_create_or_update(summit)
+
+        #################
+        # Generic tasks #
+        #################
+        generic_task_tree = ET.parse('volunteers/init_data/generic_tasks_debconf.xml')
+        generic_task_root = generic_task_tree.getroot()
+        for task in generic_task_root.findall('task'):
+            generic_task = Task.create_from_xml(task, edition)
+
+        #########
+        # Talks #
+        #########
+        days = summit.days()
+        for day in days:
+            # code from summit.schedule.view.daily_schedule()
+            viewdate = day_date = day
+
+            utc_date = summit.delocalize(viewdate)
+            day = datetime.timedelta(days=1)
+
+            schedule = SortedDict()
+            multislot_meetings = SortedDict()
+
+            for slot in summit.slot_set.filter(
+                start_utc__gte=utc_date,
+                end_utc__lte=(utc_date+day)
+            ).order_by('start_utc'):
+                if slot.type in ('lunch', 'break', 'closed'):
+                    continue
+                if not slot in schedule:
+                    schedule[slot] = SortedDict()
+
+                # Start with multi-slot meetings carried over from previous slots
+                for agenda, count in multislot_meetings.items():
+                    schedule[slot][agenda.room] = agenda
+                    if count == 1:
+                        del multislot_meetings[agenda]
+                    else:
+                        multislot_meetings[agenda] = count - 1
+
+                # Add meetings from this slot
+                for agenda in slot.agenda_set.select_related().order_by('room__name'):
+                    if not agenda.meeting.private:
+                        schedule[slot][agenda.room] = agenda
+                        if agenda.meeting.slots > 1:
+                            multislot_meetings[agenda] = agenda.meeting.slots - 1
+
+                        talk = Talk.summit_create_or_update(summit, agenda, slot, edition, day_date.date())
+
+                        if agenda.room.pk == 10: # Heidelberg
+                            Task.create_or_update_from_talk(edition, talk, 'Director', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Cameras', [2, 2, 2])
+                            Task.create_or_update_from_talk(edition, talk, 'Sound Director', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Coordinator', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Moderators', [2, 1, 2])
+                        elif agenda.room.pk == 11: # Berlin/London
+                            Task.create_or_update_from_talk(edition, talk, 'Director', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Cameras', [2, 1, 2])
+                            Task.create_or_update_from_talk(edition, talk, 'Sound Director', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Coordinator', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Moderators', [1, 1, 2])
+                        elif agenda.room.pk == 12: # Amsterdam
+                            Task.create_or_update_from_talk(edition, talk, 'Director', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Cameras', [2, 1, 2])
+                            Task.create_or_update_from_talk(edition, talk, 'Sound Director', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Coordinator', [1, 1, 1])
+                            Task.create_or_update_from_talk(edition, talk, 'Moderators', [1, 1, 2])
+                        elif agenda.room.pk in (13,14):
+                            Task.create_or_update_from_talk(edition, talk, 'Moderators', [1, 0, 2])
+
 """
 A track is a collection of talks, grouped around one single
 concept or subject.
@@ -162,6 +265,7 @@ class Talk(models.Model, HasLinkField):
         return self.title
 
     ext_id = models.CharField(max_length=16)  # ID from where we synchronise
+    meeting = models.ForeignKey(Meeting, blank=True, null=True)
     track = models.ForeignKey(Track)
     title = models.CharField(max_length=256)
     speaker = models.CharField(max_length=128)
@@ -211,6 +315,54 @@ class Talk(models.Model, HasLinkField):
             talk.speaker = speakers_str
         talk.save()
         return talk
+
+    @classmethod
+    def summit_create_or_update(cls, summit, agenda, slot, edition, day_date):
+        meeting = agenda.meeting
+        event_id = meeting.id
+        talks = cls.objects.filter(ext_id=event_id)
+        if talks.exists():
+            talk = talks[0]
+        else:
+            talk = cls(ext_id=event_id)
+        talk.meeting = meeting
+        start_time = summit.localize(slot.start)
+        start_txt = "%i:%02i" % (start_time.hour, start_time.minute)
+        dur_min = (slot.end - slot.start).seconds // 60
+        dur_txt = "%i:%02i" % divmod(dur_min, 60)
+        (talk_start, talk_end) = parse_hour_duration(start_txt, dur_txt)
+        
+        if meeting.tracks.all().exists():
+            track_name = meeting.tracks.all()[0].title
+        else:
+            track_name = "None"
+        tracks = Track.objects.filter(title=track_name, edition=edition)
+        if len(tracks):
+            track = tracks[0]
+        else:
+            track = Track(title=track_name, edition=edition, date=day_date, start_time=talk_start)
+        if day_date < track.date:
+            track.date = day_date
+        if talk_start < track.start_time:
+            track.start_time = talk_start
+        track.save()
+        talk.track = track
+        talk.title = meeting.title
+        talk.room = agenda.room.title
+        talk.description = meeting.description or ""
+        talk.date = day_date
+        (talk.start_time, talk.end_time) = (talk_start, talk_end)
+        persons = []
+        if meeting.drafter:
+            persons = [ meeting.drafter.name() ]
+        persons.extend( [speaker.name() for speaker in meeting.speakers.all()] )
+        if len(persons):
+            speakers_str = ', '.join(persons)
+            talk.speaker = speakers_str
+        print("Adding talk: %s, %s" % (talk.ext_id, talk.title))
+        talk.save()
+        return talk
+
 
 
 """
@@ -269,9 +421,8 @@ class TaskTemplate(models.Model):
         if len(templates):
             template = templates[0]
         else:
-            template = cls(name=name)
             category = TaskCategory.create_or_update_named(name)
-            template.category = category
+            template = cls(name=name, category=category)
             template.save()
         return template
 
@@ -398,7 +549,7 @@ class Volunteer(UserenaLanguageBaseProfile):
     class Meta:
         verbose_name = _('Volunteer')
         verbose_name_plural = _('Volunteers')
-        ordering = ['user__first_name', 'user__last_name']
+        ordering = ['nick', 'badge_name']
 
     def __unicode__(self):
         return self.user.username
@@ -413,6 +564,9 @@ class Volunteer(UserenaLanguageBaseProfile):
     )
 
     user = models.OneToOneField(User, unique=True, verbose_name=_('user'), related_name='volunteer')
+    badge_name = models.CharField(verbose_name='Name', max_length=32, blank=False, default="")
+    nick = models.CharField(verbose_name='Nick (IRC)', max_length=16, blank=False, default="")
+    contact_email = models.EmailField(verbose_name='Contact email', max_length=75, blank=False, default="")
     # Categories in which they're interested to help out.
     categories = models.ManyToManyField(TaskCategory, through='VolunteerCategory', blank=True, null=True, \
         help_text="""<br/><br/>
@@ -432,7 +586,7 @@ class Volunteer(UserenaLanguageBaseProfile):
 
     # Just here for the admin interface.
     def full_name(self):
-        return " ".join([self.user.first_name, self.user.last_name])
+        return self.badge.name
 
     def email(self):
         return self.user.email
@@ -480,7 +634,7 @@ class Volunteer(UserenaLanguageBaseProfile):
         return card.serialize()
 
     def mail_schedule(self):
-        subject = "FOSDEM Volunteers: your schedule"
+        subject = "DebConf Volunteers: your schedule"
         message_header = []
         message_header.extend(['Dear %s,' % (self.user.first_name),''])
         edition = Edition.objects.filter(pk=Edition.get_current)[0]
