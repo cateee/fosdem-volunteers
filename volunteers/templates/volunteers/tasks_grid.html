@@ -1,0 +1,82 @@
+{% extends "volunteer_base.html" %}
+
+{% load i18n %}
+{% load url from future %}
+
+{% block extra_header %}
+<style>
+  table.volunteer_schedule {
+    border-collapse: separate;
+    border-spacing: 5pt;
+  }
+  .missing1yes {
+      color: red;
+      font-weight: bold;
+  }
+  .missing2yes {
+      color: darkred;
+      font-weight: bold;
+  }
+  .missing3yes {
+      color: darkgreen;
+  }
+  span.sign-in-task {
+      color: red;
+  }
+  a.volunteers {
+      color: green;
+  }
+</style>
+{% endblock extra_header %}
+
+{% block content_title %}<h2 class="content-title">Tasks for {{ edition.name }} on {{ date|date:"l, Y-m-d" }}</h2>{% endblock %}
+
+{% block content %}
+
+<p class="select_day_menu">
+  schedule: {% for select_day in days %}{% if select_day == day %}<strong>{{day}}</strong>{% else %}<a href="{% url 'task_grid' edition.name select_day %}">{{select_day}}</a>{% endif %}{% if not forloop.last %}|{% endif %}{% endfor %}
+|<a href="{% url 'task_list' edition.name %}">as list</a>
+</p>                                                                                                                                                                     
+
+</p>
+
+<table class="volunteer_schedule">
+    <thead>
+        <tr>
+            <th class="time">&nbsp;</th>
+            {% for room in rooms %}<th>{{ room }}</th>{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for time, slot_rooms in slots %}
+            <tr class="schedule_grid_{{time.1|stringformat:"02i"}}">
+                <td class="time">{{ time.0 }}:{{time.1|stringformat:"02i"}}</td>
+                {% for room in slot_rooms %}
+                    <td class="slot-X" colspan="1" rowspan="1">
+                        {% if room.talk %}
+                          <span class="volunteer-grid-title"><small><strong><a href="{% url 'meeting' edition.name room.talk.meeting.id room.talk.meeting %}">{{ room.talk.title|truncatechars:32 }}</a></em></strong><span>
+                        {% elif room.tasks %}
+                          <span class="volunteer-grid-title"><small><strong>Generic tasks</strong></small></span>
+                        {% else %}
+                        {% endif %}
+                        {% for tsk in room.tasks %}
+                            <br><a href="{% url 'task_detailed' edition.name tsk.task.id %}">{{ tsk.task.template.name }}</a>:
+                              {% if tsk.missing > 0 %}Missing:
+                                <span class="missing1{{ tsk.needed|yesno }}">{{ tsk.needed }}</span>+<span class="missing2{{ tsk.optimal|yesno }}">{{ tsk.optimal }}</span>+<span class="missing3{{ tsk.extra|yesno }}">{{ tsk.extra }}</span>
+                                  {% if tsk.signin %}<span class="sign-in-task"><a href="{% url 'task_detailed' edition.name tsk.task.id %}">Sign-in!</a></span>{% endif %}
+                              {% endif %}
+                              {% for volunteer in tsk.task.volunteers.all %}
+                                  {% if forloop.first %}<span class="volunteers">{% endif %}
+                                  <a class="volunteers" href="{% url 'profile_detail' edition.name volunteer.user.username %}">{{ volunteer.nick }}</a>{% if not forloop.last %},{% else %}</span>{% endif %}
+                              {% endfor %}
+                        {% endfor %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+
+{% endblock %}
