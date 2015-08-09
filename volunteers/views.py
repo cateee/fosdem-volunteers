@@ -1,8 +1,11 @@
+import datetime
+
 from models import Volunteer, VolunteerTask, VolunteerCategory, VolunteerTalk, TaskCategory, TaskTemplate, Task, Track, Talk, Edition
 from forms import EditProfileForm, SignupForm
 
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
+from django.views.generic import TemplateView
 from django.views.generic.list import ListView
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -95,7 +98,32 @@ def talk_detailed(request, edition, volunteer, talk_id):
 @edition_required
 def task_detailed(request, edition, task_id):
     task = get_object_or_404(Task, id=task_id)
-    context = { 'task': task, 'edition': edition }
+    if task.talk:
+        current_tasks = Task.objects.filter(talk=task.talk)
+    else:
+        current_tasks = Task.objects.filter(id = task_id)
+
+    if request.user.is_authenticated():
+        volunteer = Volunteer.objects.get(user=request.user)
+    else:
+        volunteer = None
+
+    if request.method == 'POST' and volunteer:
+        # get the checked tasks
+        task_ids = request.POST.getlist('task')
+        # unchecked boxes, delete him/her from the task
+        for task in current_tasks.exclude(id__in=task_ids):
+            VolunteerTask.objects.filter(task=task, volunteer=volunteer).delete()
+        # checked boxes, add the volunteer to the tasks when he/she is not added
+        for task in current_tasks.filter(id__in=task_ids):
+            VolunteerTask.objects.get_or_create(task=task, volunteer=volunteer)
+        return redirect('task_detailed', edition_name=edition.name, task_id=task_id)
+    context = { 'task': task, 'volunteer': volunteer, 'edition': edition }
+    if volunteer:
+        context['checked'] = {}
+        for task in current_tasks:
+            context['checked'][task.id] = 'checked' if volunteer in task.volunteers.all() else ''
+    context['related_tasks'] = current_tasks
     return render(request, 'volunteers/task_detailed.html', context)
 
 @volunteer_required
@@ -280,7 +308,64 @@ def task_list(request, edition):
     context['days'] = [date.strftime("%Y-%m-%d") for date in summit.days()]
     return render(request, 'volunteers/tasks.html', context)
 
-@login_required
+
+@volunteer_required
+@edition_required
+def task_grid(request, edition, volunteer, date):
+    summit = get_object_or_404(Summit, name=edition.name)
+    start_day = summit.as_localtime(
+        datetime.datetime.strptime(date, "%Y-%m-%d")
+    )
+    next_day = start_day + datetime.timedelta(days=1)
+
+    current_tasks = Task.objects.filter(edition=edition, date=date).order_by('start_time')
+    rooms = sorted(set(current_tasks.values_list('room', flat=True).distinct()))
+    #keys = sorted(set(current_tasks.values_list('start_time', flat=True)) & set(current_tasks.values_list('end_time', flat=True)))
+    #slots = SortedDict(((key.hour, key.minute), [None]*len(rooms)) for key in keys)
+    last_time = None
+    slots = []
+
+    for task in current_tasks:
+        time = (task.start_time.hour, task.start_time.minute)
+        talk = task.talk
+        room = rooms.index(task.room)
+        if time != last_time:
+            slot = [time, [None]*len(rooms)]
+            slots.append(slot)
+            last_time = time
+        else:
+            slot = slots[-1]
+        if not slot[1][room]:
+            slot[1][room] = {'talk': talk, 'tasks': [], 'me': False}
+        tsk = {'task': task, 'me_task': False, 'signin': False, 'needed': 0, 'optimal': 0, 'extra': 0, 'missing': 0}
+        slot[1][room]['tasks'].append(tsk)
+        if not slot[1][room]['me']:
+           if VolunteerTask.objects.filter(task=task, volunteer=volunteer).exists():
+               tsk['me_task'] = True
+               slot[1][room]['me'] = True
+        count = task.volunteers.count()
+        if count < task.nbr_volunteers_min:
+            tsk['needed'] = task.nbr_volunteers_min - count
+            tsk['optimal'] = task.nbr_volunteers - task.nbr_volunteers_min
+            tsk['extra'] = task.nbr_volunteers_max - task.nbr_volunteers
+        elif count < task.nbr_volunteers:
+            tsk['needed'] = 0
+            tsk['optimal'] = task.nbr_volunteers - count
+            tsk['extra'] = task.nbr_volunteers_max - task.nbr_volunteers
+        elif count < task.nbr_volunteers_max:
+            tsk['needed'] = 0
+            tsk['optimal'] = 0
+            tsk['extra'] = task.nbr_volunteers_max - count
+        tsk['missing'] = tsk['needed'] + tsk['optimal'] + tsk['extra']
+        if tsk['missing'] > 0:
+            tsk['signin'] = not slot[1][room]['me']
+
+    days = [date.strftime("%Y-%m-%d") for date in summit.days()]
+    context = {'edition': edition, 'user': request.user, 'date': start_day, 'day': date, 'days': days,
+               'rooms': rooms, 'slots': slots, 'container_size': "large-container"}
+    return render(request, 'volunteers/tasks_grid.html', context)
+
+
 def render_to_pdf(request, template_src, context_dict):
     template = get_template(template_src)
     context = Context(context_dict)

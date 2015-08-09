@@ -9,9 +9,9 @@
 
 
 {% if profile_user %}
-<form class="task_list" action="{% url 'task_list_detailed' profile_user.username %}" method="post">{% csrf_token %}
+<form class="task_list" action="{% url 'task_list_detailed' edition.name profile_user.username %}" method="post">{% csrf_token %}
 {% else %}
-<form class="task_list" action="{% url 'task_list_detailed' user.username %}" method="post">{% csrf_token %}
+<form class="task_list" action="{% url 'task_list_detailed' edition.name user.username %}" method="post">{% csrf_token %}
 {% endif %}
 
     <fieldset>
@@ -36,7 +36,7 @@
                 {% for task in tasks %}
                 <tr>
                     <td data-title="{% trans 'When' %}">{{ task.date|date:"D" }}, {{ task.start_time|time:"H:i" }} - {{ task.end_time|time:"H:i" }}</td>
-                    <td data-title="{% trans 'Title' %}"><a href="{% url 'task_detailed' task.id %}">{{ task.name }}</a></td>
+                    <td data-title="{% trans 'Title' %}"><a href="{% url 'task_detailed' edition.name task.id %}">{{ task.name }}</a></td>
                     <td data-title="{% trans 'Attending' %}">
                     {% for volunteer in task.volunteer_set.all %}
                         {{ volunteer.user.first_name }} {{ volunteer.user.last_name }}
@@ -66,7 +66,7 @@
 <div class="pagination">
     <span class="step-links">
         {% if page_obj.has_previous %}
-        <a href="{% url 'userena_profile_list_paginated' page_obj.previous_page_number %}">{% trans 'previous' %}</a>
+        <a href="{% url 'userena_profile_list_paginated' edition.name page_obj.previous_page_number %}">{% trans 'previous' %}</a>
         {% endif %}
 
         <span class="current">
@@ -74,7 +74,7 @@
         </span>
 
         {% if page_obj.has_next %}
-        <a href="{% url 'userena_profile_list_paginated'  page_obj.next_page_number %}">{% trans 'next' %}</a>
+        <a href="{% url 'userena_profile_list_paginated' edition.name  page_obj.next_page_number %}">{% trans 'next' %}</a>
         {% endif %}
     </span>
 </div>
