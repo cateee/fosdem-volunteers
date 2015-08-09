@@ -3,6 +3,7 @@
 
     <task template="Buildup">
         <name>Buildup</name>
+        <room>Various</room>
         <counter>1</counter>
         <description>Any bit of time you can spare on Friday will be helpful! Ideally you can be there from 12:00 until ready. Experience learns us we'll be ready between 18:30 and 22:00 (hard deadline, have to leave the building). Just come in as early you can! We'll have some pizza or other food in the evening. Deadline is 22:00. Some of us go to the beer event afterwards.
 
@@ -17,6 +18,7 @@ This task includes many subtasks. Some require carrying heavy stuff around, some
 
     <task template="Buildup">
         <name>Signage Buildup</name>
+        <room>K</room>
         <counter>1</counter>
         <description>Exterior signage buildup. What needs to be done:
 *  drag signs (flipboards,...) outside across campus
@@ -40,6 +42,7 @@ Meeting point: K infodesk, 07:30. If you are late, please call Geert Goossens at
 
     <task template="Transportation">
         <name>Transportation Buildup</name>
+        <room>Various</room>
         <counter>1</counter>
         <description>Organising an event requires lots of stuff to be brought on-site. Things like scaffolding, the O'Reilly books, T-shirts, network gear, ... - some of this stuff may be heavy, so if yo enlist for this, make sure you're OK with lifting potentially heavy objects.
 
@@ -54,6 +57,7 @@ While having a mobile phone number is strongly encouraged for any volunteer, it'
 
     <task template="Transportation">
         <name>Transportation Cleanup</name>
+        <room>Various</room>
         <counter>1</counter>
         <description>On Sunday evening, we load all the stuff that needs to be returned back into the vans. The vans will be stalled somewhere overnight so the cargo can be returned the next day. It helps to keep items that go to the same or geographically close locations in the same van, unless everything fits in one.</description>
         <day>1</day>
@@ -66,6 +70,7 @@ While having a mobile phone number is strongly encouraged for any volunteer, it'
 
     <task template="Transportation">
         <name>Transportation Return</name>
+        <room>Various</room>
         <counter>1</counter>
         <description>Returning all the things that need to be returned, gas up the van and return to Dockx. The van can be gassed up at the petrol station near Dockx.</description>
         <day>2</day>
@@ -81,6 +86,7 @@ While having a mobile phone number is strongly encouraged for any volunteer, it'
 
     <task template="Cleanup">
         <name>Cleanup</name>
+        <room>Various</room>
         <counter>1</counter>
         <description>We need to leave the premises in a presentable state. Everything we bring and set up must be torn down and removed. All signalization removed, network torn down (go wild; we don't reuse the cables!), tables and chairs stacked so the rental company can load them up when they retrieve them, the floors wiped, ...
 
@@ -102,6 +108,7 @@ As many volunteers as possible! That way, it won't take too long. :)</descriptio
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>K</room>
         <counter>1</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -127,6 +134,7 @@ IMPORTANT Notes
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>Various</room>
         <counter>2</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -152,6 +160,7 @@ IMPORTANT Notes
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>Various</room>
         <counter>3</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -177,6 +186,7 @@ IMPORTANT Notes
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>Various</room>
         <counter>4</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -202,6 +212,7 @@ IMPORTANT Notes
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>Various</room>
         <counter>5</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -227,6 +238,7 @@ IMPORTANT Notes
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>Various</room>
         <counter>6</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -252,6 +264,7 @@ IMPORTANT Notes
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>Various</room>
         <counter>7</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -277,6 +290,7 @@ IMPORTANT Notes
 
     <task template="Cloak Room">
         <name>Cloak Room</name>
+        <room>Various</room>
         <counter>8</counter>
         <description>During the event, we offer visitors a place to leave their coats and luggage. It's usually very busy at the start and end of the day; in between it's quite relaxed.
 
@@ -305,6 +319,7 @@ IMPORTANT Notes
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>1</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -319,6 +334,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>2</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -333,6 +349,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>3</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -347,6 +364,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>4</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -361,6 +379,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>5</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -375,6 +394,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>6</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -389,6 +409,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>7</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -403,6 +424,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk H</name>
+        <room>H</room>
         <counter>8</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -417,6 +439,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>1</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -431,6 +454,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>2</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -445,6 +469,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>3</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -459,6 +484,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>4</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -473,6 +499,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>5</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -487,6 +514,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>6</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -501,6 +529,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>7</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -515,6 +544,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Infodesk">
         <name>Infodesk K</name>
+        <room>K</room>
         <counter>8</counter>
         <description>The infodesk is about helping out fellow visitors who have questions, sell T-shirts, ... Must be a good English speaker, but if you know other languages besides that it certainly won’t hurt. At infodesk K, you are working alongside experienced staff. At infodesk H, you might be thrown to the lions :)
 
@@ -531,6 +561,7 @@ The hours are a bit flexible. If you have to leave 10 minutes early, or if you a
 
     <task template="Network Buildup">
         <name>Network Buildup</name>
+        <room>Net</room>
         <counter>1</counter>
         <description>Network buildup starts on Friday around noon and is expected to end around 20:00. We usually don't make that deadline, so please be prepared to stay a bit longer. :)
 
